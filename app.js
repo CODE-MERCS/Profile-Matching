@@ -4,6 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const pekerjaanRoutes = require('./routes/pekerjaanRoutes');
+const kriteriaRoutes = require('./routes/kriteriaRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -12,7 +13,7 @@ const app = express();
 
 // Middleware untuk mengizinkan CORS dengan credentials (cookies)
 app.use(cors({
-  origin: "http://localhost:5173", // Sesuaikan dengan URL frontend Anda
+  origin: process.env.FRONTEND_URL || "http://localhost:5173", // Sesuaikan dengan URL frontend Anda
   credentials: true, // Izinkan cookies dikirim dalam request
   methods: "GET,POST,PUT,DELETE,PATCH",
   allowedHeaders: "Content-Type,Authorization"
@@ -24,6 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/auth', authRoutes);
 app.use('/pekerjaan', pekerjaanRoutes);
+app.use('/kriteria', kriteriaRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
@@ -35,7 +37,7 @@ app.get('/', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err);
   res.status(500).json({ 
     success: false, 
     message: 'Something went wrong!',
