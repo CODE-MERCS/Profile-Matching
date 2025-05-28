@@ -1,3 +1,4 @@
+-- prisma/migrations/20250526180058_add_password_reset/migration.sql
 -- CreateTable
 CREATE TABLE "password_resets" (
     "id" SERIAL NOT NULL,

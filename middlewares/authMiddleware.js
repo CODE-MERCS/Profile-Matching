@@ -1,3 +1,4 @@
+// middlewares/authMiddleware.js
 const { body, validationResult } = require('express-validator');
 const authService = require('../services/authService');
 

@@ -1,3 +1,4 @@
+-- prisma/migrations/20250526172222_setup/migration.sql
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
