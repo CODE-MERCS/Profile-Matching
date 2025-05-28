@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +9,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Existing User and PasswordReset models
 model User {
   id        String   @id @default(uuid())
   name      String
@@ -16,7 +19,6 @@ model User {
   role      String   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 }
 
 model PasswordReset {
@@ -29,4 +31,117 @@ model PasswordReset {
   updatedAt DateTime @updatedAt
 
   @@map("password_resets")
+}
+
+// Profile Matching System Models
+
+// Tabel Pekerjaan
+model Pekerjaan {
+  id               String        @id @default(uuid()) @map("id_pekerjaan")
+  namapekerjaan    String        @map("namapekerjaan")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  
+  // Relasi ke Subkriteria
+  subkriterias     Subkriteria[]
+  
+  @@map("pekerjaan")
+}
+
+// Tabel Kriteria
+model Kriteria {
+  id           String        @id @default(uuid()) @map("id_kriteria")
+  namakriteria String        @map("namakriteria")
+  presentase   Float         @map("presentase") // Bobot kriteria dalam persen
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  // Relasi ke Subkriteria
+  subkriterias Subkriteria[]
+  
+  @@map("kriteria")
+}
+
+// Tabel Subkriteria (Junction table dengan data tambahan)
+model Subkriteria {
+  id             String    @id @default(uuid()) @map("id_subkriteria")
+  namasubkriteria String   @map("namasubkriteria")
+  namakriteria   String    @map("namakriteria")
+  nilaitarget    Float     @map("nilaitarget") // Target nilai untuk subkriteria ini
+  status         String    @default("active") // active, inactive
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  // Foreign Keys
+  pekerjaanId    String    @map("id_pekerjaan")
+  kriteriaId     String    @map("id_kriteria")
+  
+  // Relations
+  pekerjaan      Pekerjaan @relation(fields: [pekerjaanId], references: [id], onDelete: Cascade)
+  kriteria       Kriteria  @relation(fields: [kriteriaId], references: [id], onDelete: Cascade)
+  
+  // Relasi ke Perhitungan
+  perhitungans   Perhitungan[]
+  
+  @@unique([pekerjaanId, kriteriaId]) // Satu pekerjaan hanya punya satu subkriteria per kriteria
+  @@map("subkriteria")
+}
+
+// Tabel Pelamar
+model Pelamar {
+  id           String        @id @default(uuid()) @map("id_pelamar")
+  namapelamar  String        @map("namapelamar")
+  telp         String        @map("telp")
+  email        String        @unique @map("email")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  // Relasi ke Perhitungan dan Ranking
+  perhitungans Perhitungan[]
+  rankings     Ranking[]
+  
+  @@map("pelamar")
+}
+
+// Tabel Perhitungan (Detail nilai pelamar untuk setiap subkriteria)
+model Perhitungan {
+  id            String      @id @default(uuid()) @map("id_perhitungan")
+  target        Float       @map("target") // Nilai target dari subkriteria
+  gap           Float       @map("gap") // Selisih antara nilai pelamar dengan target
+  ncf           Float       @map("ncf") // Nilai Core Factor
+  nsf           Float       @map("nsf") // Nilai Secondary Factor  
+  total         Float       @map("total") // Total nilai untuk subkriteria ini
+  periode       String      @map("periode") // Periode penilaian (misal: "2025-Q1")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  // Foreign Keys
+  pelamarId     String      @map("id_pelamar")
+  subkriteriaId String      @map("id_subkriteria")
+  
+  // Relations
+  pelamar       Pelamar     @relation(fields: [pelamarId], references: [id], onDelete: Cascade)
+  subkriteria   Subkriteria @relation(fields: [subkriteriaId], references: [id], onDelete: Cascade)
+  
+  @@unique([pelamarId, subkriteriaId, periode]) // Satu pelamar, satu subkriteria, satu periode
+  @@map("perhitungan")
+}
+
+// Tabel Ranking (Hasil akhir ranking pelamar)
+model Ranking {
+  id          String   @id @default(uuid()) @map("id_ranking")
+  nilaiakhir  Float    @map("nilaiakhir") // Nilai akhir hasil perhitungan Profile Matching
+  rank        Int      @map("rank") // Urutan ranking (1, 2, 3, dst)
+  periode     String   @map("periode") // Periode ranking
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Foreign Key
+  pelamarId   String   @map("id_pelamar")
+  
+  // Relation
+  pelamar     Pelamar  @relation(fields: [pelamarId], references: [id], onDelete: Cascade)
+  
+  @@unique([pelamarId, periode]) // Satu pelamar hanya punya satu ranking per periode
+  @@map("ranking")
 }
