@@ -1,17 +1,17 @@
 // middlewares/pekerjaanMiddleware.js
-const { body, param, validationResult } = require('express-validator');
+const validator = require('express-validator');
 
 // Validasi input untuk membuat atau mengupdate pekerjaan
 const validatePekerjaan = [
-  body('namapekerjaan')
+  validator.body('namapekerjaan')
     .trim()
     .notEmpty()
     .withMessage('Nama pekerjaan wajib diisi')
-    .isLength({ min: 3, max: 100 })
-    .withMessage('Nama pekerjaan harus antara 3-100 karakter'),
+    .isLength({ min: 3, max: 50 })
+    .withMessage('Nama pekerjaan harus antara 3-50 karakter'),
   
   (req, res, next) => {
-    const errors = validationResult(req);
+    const errors = validator.validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
@@ -25,14 +25,14 @@ const validatePekerjaan = [
 
 // Validasi parameter ID
 const validatePekerjaanId = [
-  param('id')
+  validator.param('id')
     .notEmpty()
     .withMessage('ID pekerjaan diperlukan')
-    .isUUID()
-    .withMessage('Format ID pekerjaan tidak valid'),
+    .isInt()
+    .withMessage('ID pekerjaan harus berupa angka'),
   
   (req, res, next) => {
-    const errors = validationResult(req);
+    const errors = validator.validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
