@@ -4,7 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const pekerjaanRoutes = require('./routes/pekerjaanRoutes');
-const kriteriaRoutes = require('./routes/kriteriaRoutes');
+// const kriteriaRoutes = require('./routes/kriteriaRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/auth', authRoutes);
 app.use('/pekerjaan', pekerjaanRoutes);
-app.use('/kriteria', kriteriaRoutes);
+// app.use('/kriteria', kriteriaRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
